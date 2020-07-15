@@ -5,3 +5,7 @@
 *.json
 *.txt
 nb*.xml\
+.idea
+.ideaold
+*.jar
+
