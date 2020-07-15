@@ -23,8 +23,13 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+<<<<<<< HEAD
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
+=======
+import net.dv8tion.jda.core.OnlineStatus;
+import net.dv8tion.jda.core.entities.Game;
+>>>>>>> f2658a9 (Rebased to new version)
 import okhttp3.*;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -135,6 +140,11 @@ public class OtherUtil
             }
         }
         return Activity.playing(game);
+    }
+   
+    public static String makeNonEmpty(String str)
+    {
+        return str == null || str.isEmpty() ? "\u200B" : str;
     }
    
     public static String makeNonEmpty(String str)

@@ -121,7 +121,7 @@ public class Settings implements GuildSettingsProvider
     {
         return prefix;
     }
-    
+
     public double getSkipRatio()
     {
         return skipRatio;
