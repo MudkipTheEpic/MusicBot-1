@@ -17,6 +17,8 @@ package com.jagrosh.jmusicbot.commands.dj;
 
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.jagrosh.jmusicbot.Bot;
+import com.jagrosh.jmusicbot.audio.AudioHandler;
+import com.jagrosh.jmusicbot.audio.FilterManager;
 import com.jagrosh.jmusicbot.commands.DJCommand;
 import com.jagrosh.jmusicbot.settings.Settings;
 
@@ -24,45 +26,46 @@ import com.jagrosh.jmusicbot.settings.Settings;
  *
  * @author John Grosh <john.a.grosh@gmail.com>
  */
-public class RepeatCmd extends DJCommand
+public class KaraokeCmd extends DJCommand
 {
-    public RepeatCmd(Bot bot)
+    public KaraokeCmd(Bot bot)
     {
         super(bot);
-        this.name = "repeat";
-        this.help = "re-adds music to the queue when finished";
+        this.name = "karaoke";
+        this.help = "enables/disables karaoke filter";
         this.arguments = "[on|off]";
-        this.aliases = bot.getConfig().getAliases(this.name);
         this.guildOnly = true;
     }
-    
-    // override musiccommand's execute because we don't actually care where this is used
+
+
     @Override
-    protected void execute(CommandEvent event) 
-    {
-        boolean value;
+    public void doCommand(CommandEvent event) {
+        AudioHandler handler = (AudioHandler)event.getGuild().getAudioManager().getSendingHandler();
+
+        FilterManager manager = handler.getFilterManager();
+
+        boolean isEnabled = manager.isKaraokeEnabled();
         Settings settings = event.getClient().getSettingsFor(event.getGuild());
         if(event.getArgs().isEmpty())
         {
-            value = !settings.getRepeatMode();
+            event.reply("\ud83c\udfa4 Karaoke mode is currently `" + (isEnabled ? "enabled" : "disabled") + "`"); //🎤
+            return;
         }
         else if(event.getArgs().equalsIgnoreCase("true") || event.getArgs().equalsIgnoreCase("on"))
         {
-            value = true;
+            isEnabled = true;
         }
         else if(event.getArgs().equalsIgnoreCase("false") || event.getArgs().equalsIgnoreCase("off"))
         {
-            value = false;
+            isEnabled = false;
         }
         else
         {
-            event.replyError("Valid options are `on` or `off` (or leave empty to toggle)");
+            event.replyError("Valid options are `on` or `off` (or leave empty to check current state)");
             return;
         }
-        settings.setRepeatMode(value);
-        event.replySuccess("Repeat mode is now `"+(value ? "ON" : "OFF")+"`");
+        manager.setKaraokeEnabled(isEnabled);
+        handler.getPlayer().setFilterFactory(manager.getFactory());
+        event.reply("\ud83c\udfa4 Karaoke mode is now `"+(isEnabled ? "enabled" : "disabled")+"`"); //🎤
     }
-
-    @Override
-    public void doCommand(CommandEvent event) { /* Intentionally Empty */ }
 }

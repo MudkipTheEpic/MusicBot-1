@@ -18,52 +18,61 @@ package com.jagrosh.jmusicbot.commands.dj;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.jagrosh.jmusicbot.Bot;
 import com.jagrosh.jmusicbot.audio.AudioHandler;
+import com.jagrosh.jmusicbot.audio.FilterManager;
 import com.jagrosh.jmusicbot.commands.DJCommand;
 import com.jagrosh.jmusicbot.settings.Settings;
 import com.jagrosh.jmusicbot.utils.FormatUtil;
+import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 
 /**
  *
  * @author John Grosh <john.a.grosh@gmail.com>
  */
-public class VolumeCmd extends DJCommand
+public class BassCmd extends DJCommand
 {
-    public VolumeCmd(Bot bot)
+    public BassCmd(Bot bot)
     {
         super(bot);
-        this.name = "volume";
-        this.aliases = bot.getConfig().getAliases(this.name);
-        this.help = "sets or shows volume";
-        this.arguments = "[0-150]";
+        this.name = "bass";
+        this.aliases = new String[]{"boost"};
+        this.help = "Adjusts bass levels";
+        this.arguments = "[1-500] or [reset]";
     }
 
     @Override
     public void doCommand(CommandEvent event)
     {
+
         AudioHandler handler = (AudioHandler)event.getGuild().getAudioManager().getSendingHandler();
-        Settings settings = event.getClient().getSettingsFor(event.getGuild());
-        int volume = handler.getPlayer().getVolume();
+
+        FilterManager manager = handler.getFilterManager();
+
+        float bassLevel = manager.getBassScaleFactor();
+
         if(event.getArgs().isEmpty())
         {
-            event.reply(FormatUtil.volumeIcon(volume)+" Current volume is `"+volume+"`");
+            event.reply(FormatUtil.volumeIcon((int) (Math.sqrt(bassLevel) * 50 ))+" Current bass level is `"+(int) (bassLevel * 100)+"`%");
         }
         else
         {
-            int nvolume;
+            float newBassLevel;
             try{
-                nvolume = Integer.parseInt(event.getArgs());
+                newBassLevel = ((float) Integer.parseInt(event.getArgs()) / 100);
             }catch(NumberFormatException e){
-                nvolume = -1;
+                if (event.getArgs().equalsIgnoreCase("reset")) {
+                    newBassLevel = 1;
+                } else {
+                    newBassLevel = -1;
+                }
             }
-            if(nvolume<0 || nvolume>150)
-                event.reply(event.getClient().getError()+" Volume must be a valid integer between 0 and 150!");
+            if(!manager.setBassScaleFactor(newBassLevel))
+                event.reply(event.getClient().getError()+" Bass level must be a valid integer between 0 and 500!");
             else
             {
-                handler.getPlayer().setVolume(nvolume);
-                settings.setVolume(nvolume);
-                event.reply(FormatUtil.volumeIcon(nvolume)+" Volume changed from `"+volume+"` to `"+nvolume+"`");
+                handler.getPlayer().setFilterFactory(manager.getFactory());
+                event.reply(FormatUtil.volumeIcon((int) (Math.sqrt(newBassLevel) * 50 ))+" Bass level changed from `"+(int) (bassLevel*100)+"`% to `"+(int) (newBassLevel*100)+"`%");
             }
         }
     }
-    
+
 }

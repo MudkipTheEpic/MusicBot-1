@@ -16,6 +16,7 @@
 package com.jagrosh.jmusicbot.settings;
 
 import com.jagrosh.jdautilities.command.GuildSettingsManager;
+import com.jagrosh.jmusicbot.utils.OtherUtil;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -37,7 +38,7 @@ public class SettingsManager implements GuildSettingsManager
     {
         this.settings = new HashMap<>();
         try {
-            JSONObject loadedSettings = new JSONObject(new String(Files.readAllBytes(Paths.get("serversettings.json"))));
+            JSONObject loadedSettings = new JSONObject(new String(Files.readAllBytes(OtherUtil.getPath("serversettings.json"))));
             loadedSettings.keySet().forEach((id) -> {
                 JSONObject o = loadedSettings.getJSONObject(id);
                 settings.put(Long.parseLong(id), new Settings(this,
@@ -46,7 +47,8 @@ public class SettingsManager implements GuildSettingsManager
                         o.has("dj_role_id")      ? o.getString("dj_role_id")      : null,
                         o.has("volume")          ? o.getInt("volume")             : 100,
                         o.has("default_playlist")? o.getString("default_playlist"): null,
-                        o.has("repeat")          ? o.getBoolean("repeat")         : false));
+                        o.has("repeat")          ? o.getBoolean("repeat")         : false,
+                        o.has("prefix")          ? o.getString("prefix")          : null));
             });
         } catch(IOException | JSONException e) {
             LoggerFactory.getLogger("Settings").warn("Failed to load server settings (this is normal if no settings have been set yet): "+e);
@@ -72,7 +74,7 @@ public class SettingsManager implements GuildSettingsManager
     
     private Settings createDefaultSettings()
     {
-        return new Settings(this, 0, 0, 0, 100, null, false);
+        return new Settings(this, 0, 0, 0, 100, null, false, null);
     }
     
     protected void writeSettings()
@@ -89,14 +91,16 @@ public class SettingsManager implements GuildSettingsManager
                 o.put("dj_role_id", Long.toString(s.roleId));
             if(s.getVolume()!=100)
                 o.put("volume",s.getVolume());
-            if(s.getDefaultPlaylist()!=null)
+            if(s.getDefaultPlaylist() != null)
                 o.put("default_playlist", s.getDefaultPlaylist());
             if(s.getRepeatMode())
                 o.put("repeat", true);
+            if(s.getPrefix() != null)
+                o.put("prefix", s.getPrefix());
             obj.put(Long.toString(key), o);
         });
         try {
-            Files.write(Paths.get("serversettings.json"), obj.toString(4).getBytes());
+            Files.write(OtherUtil.getPath("serversettings.json"), obj.toString(4).getBytes());
         } catch(IOException ex){
             LoggerFactory.getLogger("Settings").warn("Failed to write to file: "+ex);
         }

@@ -31,18 +31,17 @@ import net.dv8tion.jda.core.entities.Message;
  *
  * @author John Grosh (john.a.grosh@gmail.com)
  */
-public class PlaynextCmd extends DJCommand
+public class PlayskipCmd extends DJCommand
 {
     private final String loadingEmoji;
-    
-    public PlaynextCmd(Bot bot)
+
+    public PlayskipCmd(Bot bot)
     {
         super(bot);
         this.loadingEmoji = bot.getConfig().getLoading();
-        this.name = "playnext";
+        this.name = "playskip";
         this.arguments = "<title|URL>";
-        this.help = "plays a single song next";
-        this.aliases = bot.getConfig().getAliases(this.name);
+        this.help = "plays a single song immediately";
         this.beListening = true;
         this.bePlaying = false;
     }
@@ -84,8 +83,9 @@ public class PlaynextCmd extends DJCommand
             }
             AudioHandler handler = (AudioHandler)event.getGuild().getAudioManager().getSendingHandler();
             int pos = handler.addTrackToFront(new QueuedTrack(track, event.getAuthor()))+1;
+            handler.getPlayer().stopTrack();
             String addMsg = FormatUtil.filter(event.getClient().getSuccess()+" Added **"+track.getInfo().title
-                    +"** (`"+FormatUtil.formatTime(track.getDuration())+"`) "+(pos==0?"to begin playing":" to the queue at position "+pos));
+                    +"** (`"+FormatUtil.formatTime(track.getDuration())+"`) to begin playing");
             m.editMessage(addMsg).queue();
         }
         

@@ -18,52 +18,58 @@ package com.jagrosh.jmusicbot.commands.dj;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.jagrosh.jmusicbot.Bot;
 import com.jagrosh.jmusicbot.audio.AudioHandler;
+import com.jagrosh.jmusicbot.audio.FilterManager;
 import com.jagrosh.jmusicbot.commands.DJCommand;
-import com.jagrosh.jmusicbot.settings.Settings;
 import com.jagrosh.jmusicbot.utils.FormatUtil;
 
 /**
  *
  * @author John Grosh <john.a.grosh@gmail.com>
  */
-public class VolumeCmd extends DJCommand
+public class SpeedCmd extends DJCommand
 {
-    public VolumeCmd(Bot bot)
+    public SpeedCmd(Bot bot)
     {
         super(bot);
-        this.name = "volume";
-        this.aliases = bot.getConfig().getAliases(this.name);
-        this.help = "sets or shows volume";
-        this.arguments = "[0-150]";
+        this.name = "speed";
+        this.aliases = new String[]{};
+        this.help = "Adjusts playback speed";
+        this.arguments = "[25-400] or [reset]";
     }
 
     @Override
     public void doCommand(CommandEvent event)
     {
+
         AudioHandler handler = (AudioHandler)event.getGuild().getAudioManager().getSendingHandler();
-        Settings settings = event.getClient().getSettingsFor(event.getGuild());
-        int volume = handler.getPlayer().getVolume();
+
+        FilterManager manager = handler.getFilterManager();
+
+        double timeScale = manager.getTimeScaleFactor();
+
         if(event.getArgs().isEmpty())
         {
-            event.reply(FormatUtil.volumeIcon(volume)+" Current volume is `"+volume+"`");
+            event.reply("\u23f0 Current playback speed is `"+(int) (timeScale * 100)+"`%");
         }
         else
         {
-            int nvolume;
+            double newTimeScale;
             try{
-                nvolume = Integer.parseInt(event.getArgs());
-            }catch(NumberFormatException e){
-                nvolume = -1;
+                newTimeScale = ((double) Integer.parseInt(event.getArgs()) / 100);
+            }catch(NumberFormatException e) {
+                if (event.getArgs().equalsIgnoreCase("reset")) {
+                    newTimeScale = 1;
+                } else {
+                    newTimeScale = -1;
+                }
             }
-            if(nvolume<0 || nvolume>150)
-                event.reply(event.getClient().getError()+" Volume must be a valid integer between 0 and 150!");
+            if(!manager.setTimeScaleFactor(newTimeScale))
+                event.reply(event.getClient().getError()+" Playback speed must be a valid integer between 25 and 400!");
             else
             {
-                handler.getPlayer().setVolume(nvolume);
-                settings.setVolume(nvolume);
-                event.reply(FormatUtil.volumeIcon(nvolume)+" Volume changed from `"+volume+"` to `"+nvolume+"`");
+                handler.getPlayer().setFilterFactory(manager.getFactory());
+                event.reply("\u23f0 Playback speed changed from `"+(int) (timeScale*100)+"`% to `"+(int) (newTimeScale*100)+"`%");
             }
         }
     }
-    
 }

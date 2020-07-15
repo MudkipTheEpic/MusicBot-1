@@ -15,26 +15,22 @@
  */
 package com.jagrosh.jmusicbot.commands.admin;
 
-import java.util.List;
 import com.jagrosh.jdautilities.command.CommandEvent;
-import com.jagrosh.jdautilities.commons.utils.FinderUtil;
 import com.jagrosh.jmusicbot.Bot;
 import com.jagrosh.jmusicbot.commands.AdminCommand;
 import com.jagrosh.jmusicbot.settings.Settings;
-import com.jagrosh.jmusicbot.utils.FormatUtil;
-import net.dv8tion.jda.core.entities.Role;
 
 /**
  *
- * @author John Grosh <john.a.grosh@gmail.com>
+ * @author John Grosh (john.a.grosh@gmail.com)
  */
-public class SetdjCmd extends AdminCommand
+public class PrefixCmd extends AdminCommand
 {
-    public SetdjCmd(Bot bot)
+    public PrefixCmd(Bot bot)
     {
-        this.name = "setdj";
-        this.help = "sets the DJ role for certain music commands";
-        this.arguments = "<rolename|NONE>";
+        this.name = "prefix";
+        this.help = "sets a server-specific prefix";
+        this.arguments = "<prefix|NONE>";
         this.aliases = bot.getConfig().getAliases(this.name);
     }
     
@@ -43,28 +39,20 @@ public class SetdjCmd extends AdminCommand
     {
         if(event.getArgs().isEmpty())
         {
-            event.reply(event.getClient().getError()+" Please include a role name or NONE");
+            event.replyError("Please include a prefix or NONE");
             return;
         }
+        
         Settings s = event.getClient().getSettingsFor(event.getGuild());
         if(event.getArgs().equalsIgnoreCase("none"))
         {
-            s.setDJRole(null);
-            event.reply(event.getClient().getSuccess()+" DJ role cleared; Only Admins can use the DJ commands.");
+            s.setPrefix(null);
+            event.replySuccess("Prefix cleared.");
         }
         else
         {
-            List<Role> list = FinderUtil.findRoles(event.getArgs(), event.getGuild());
-            if(list.isEmpty())
-                event.reply(event.getClient().getWarning()+" No Roles found matching \""+event.getArgs()+"\"");
-            else if (list.size()>1)
-                event.reply(event.getClient().getWarning()+FormatUtil.listOfRoles(list, event.getArgs()));
-            else
-            {
-                s.setDJRole(list.get(0));
-                event.reply(event.getClient().getSuccess()+" DJ commands can now be used by users with the **"+list.get(0).getName()+"** role.");
-            }
+            s.setPrefix(event.getArgs());
+            event.replySuccess("Custom prefix set to `" + event.getArgs() + "` on *" + event.getGuild().getName() + "*");
         }
     }
-    
 }
