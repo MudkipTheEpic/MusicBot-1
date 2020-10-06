@@ -37,38 +37,71 @@ public class PitchCmd extends DJCommand
     }
 
     @Override
-    public void doCommand(CommandEvent event)
-    {
+    public void doCommand(CommandEvent event) {
 
         AudioHandler handler = (AudioHandler)event.getGuild().getAudioManager().getSendingHandler();
 
         FilterManager manager = handler.getFilterManager();
 
-        double pitchScale = manager.getPitchScaleFactor();
-
-        if(event.getArgs().isEmpty())
-        {
+		double pitchScale = manager.getPitchScaleFactor();
+		
+        if(event.getArgs().isEmpty()) {
             event.reply("\ud83d\udce3 Current pitch value is `"+(int) (pitchScale * 100)+"`%");
-        }
-        else
-        {
+        } else {
+			String input = event.getArgs();
             double newPitchScale;
-            try{
-                newPitchScale = ((double) Integer.parseInt(event.getArgs()) / 100);
-            }catch(NumberFormatException e) {
-                if (event.getArgs().equalsIgnoreCase("reset")) {
+            if (event.getArgs().equalsIgnoreCase("reset")) {
                     newPitchScale = 1;
-                } else {
-                    newPitchScale = -1;
-                }
-            }
-            if(!manager.setPitchScaleFactor(newPitchScale))
-                event.reply(event.getClient().getError()+" Pitch value must be a valid integer between 25 and 400!");
+			} else {
+				newPitchScale = getNewPitch(event.getArgs(), pitchScale);
+			}
+            if(!manager.setPitchScaleFactor(newPitchScale)) {
+				event.reply(event.getClient().getError()+" Pitch value must be a valid integer between 25 and 400!");
+			}
             else
             {
                 handler.getPlayer().setFilterFactory(manager.getFactory());
                 event.reply("\ud83d\udce3 Pitch value changed from `"+(int) (pitchScale*100)+"`% to `"+(int) (newPitchScale*100)+"`%");
             }
         }
-    }
+	}
+	
+	private double getNewPitch(String argument, double oldPitch) {
+		try {
+			int relative = 0;
+			if (argument.startsWith("+")) {
+					relative = 1;
+					argument = argument.substring(1);
+			} else if (argument.startsWith("-")) {
+					relative = -1;
+					argument = argument.substring(1);
+			}
+			if (argument.endsWith("o")) {
+				double octaveAdjustment;
+				if (relative != 0) {
+					octaveAdjustment = Math.log(oldPitch) / 0.69314718056;
+					octaveAdjustment += relative * Double.parseDouble(argument.substring(0, argument.length() - 1));
+				} else { 
+					octaveAdjustment = Double.parseDouble(argument.substring(0, argument.length() - 1));
+				}
+				return Math.exp(0.69314718056 * Math.max(Math.min(octaveAdjustment, 1.0), -1.0));
+			} else if (argument.endsWith("s")) {
+				double semitoneAdjustment;
+				if (relative != 0) {
+					semitoneAdjustment = (Math.log(oldPitch) / 0.69314718056) * 12;
+					semitoneAdjustment += relative * Double.parseDouble(argument.substring(0,argument.length()-1));
+				} else {
+					semitoneAdjustment = Double.parseDouble(argument.substring(0, argument.length() - 1));
+				}
+				return Math.exp(0.69314718056 * Math.max(Math.min(semitoneAdjustment / 12, 1.0), -1.0));
+			}
+			if (relative != 0) {
+				return oldPitch + (relative * Double.parseDouble(argument) / 100.0);
+			}
+			return Double.parseDouble(argument) / 100.0;
+		} catch (NumberFormatException e) {
+			throw e;
+			//return -1;
+		}
+	}
 }
