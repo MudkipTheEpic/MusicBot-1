@@ -51,6 +51,7 @@ public class AudioHandler extends AudioEventAdapter implements AudioSendHandler
     
     private final PlayerManager manager;
     private final AudioPlayer audioPlayer;
+    private final FilterManager filterManager;
     private final long guildId;
     
     private AudioFrame lastFrame;
@@ -60,6 +61,7 @@ public class AudioHandler extends AudioEventAdapter implements AudioSendHandler
         this.manager = manager;
         this.audioPlayer = player;
         this.guildId = guild.getIdLong();
+        this.filterManager = new FilterManager();
     }
 
     public int addTrackToFront(QueuedTrack qtrack)
@@ -184,6 +186,7 @@ public class AudioHandler extends AudioEventAdapter implements AudioSendHandler
     {
         votes.clear();
         manager.getBot().getNowplayingHandler().onTrackUpdate(guildId, track, this);
+        player.setFilterFactory(filterManager.getFactory());
     }
 
     
@@ -310,5 +313,9 @@ public class AudioHandler extends AudioEventAdapter implements AudioSendHandler
     private Guild guild(JDA jda)
     {
         return jda.getGuildById(guildId);
+    }
+
+    public FilterManager getFilterManager() {
+        return filterManager;
     }
 }
