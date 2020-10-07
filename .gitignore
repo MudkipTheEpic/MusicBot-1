@@ -8,3 +8,5 @@ nb*.xml
 *.jar
 /.idea/
 *.bat
+nb*.xml\
+/lavaplayer-1.3.59/
