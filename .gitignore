@@ -5,7 +5,10 @@
 *.json
 *.txt
 nb*.xml\
+<<<<<<< HEAD
 *.jar
 /.idea/
 *.bat
 
+=======
+>>>>>>> f2658a97580f50061b88b40b470da52ee1f5435b
