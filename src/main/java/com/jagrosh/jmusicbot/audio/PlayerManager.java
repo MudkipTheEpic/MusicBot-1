@@ -41,6 +41,7 @@ public class PlayerManager extends DefaultAudioPlayerManager
         AudioSourceManagers.registerRemoteSources(this);
         AudioSourceManagers.registerLocalSource(this);
         source(YoutubeAudioSourceManager.class).setPlaylistPageCount(10);
+        this.getConfiguration().setFilterHotSwapEnabled(true);
     }
     
     public Bot getBot()

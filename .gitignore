@@ -4,4 +4,4 @@
 /test/
 *.json
 *.txt
-nb*.xml
+nb*.xml\
