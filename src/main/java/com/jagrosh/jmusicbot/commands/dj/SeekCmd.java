@@ -68,9 +68,9 @@ public class SeekCmd extends DJCommand
         String labelEmoji;
 
         if (boundedSeekPosition > track.getPosition()) {
-            labelEmoji = JMusicBot.FORWARD_EMOJI;
+            labelEmoji = "⏩";
         } else if (boundedSeekPosition < track.getPosition()) {
-            labelEmoji = JMusicBot.BACKWARDS_EMOJI;
+            labelEmoji = "⏪";
         } else {
             labelEmoji = "";
         }
