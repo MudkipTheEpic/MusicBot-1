@@ -6,10 +6,6 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-<<<<<<< HEAD
-        <module name="MusicBot-1" />
-=======
->>>>>>> f2658a9 (Rebased to new version)
         <module name="JMusicBot" />
       </profile>
     </annotationProcessing>
